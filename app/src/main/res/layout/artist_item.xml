@@ -12,6 +12,7 @@
         android:layout_gravity="left|center_vertical"
         android:padding="5dp"
         android:layout_marginRight="10dp"
+        android:src="@drawable/spotifyicon"
         />
 
     <TextView

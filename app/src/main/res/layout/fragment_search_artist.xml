@@ -4,11 +4,14 @@
     tools:context="com.udacity.qinfeng.sportifystreamer.SearchArtistFragment"
     android:orientation="vertical">
 
-
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/searchArtistET"
+
+        />
+    <include layout="@layout/searching"
+        android:id="@+id/loadingIcon"
         />
 
     <ListView

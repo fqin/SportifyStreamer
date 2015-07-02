@@ -1,24 +1,26 @@
-package com.udacity.qinfeng.sportifystreamer;
+package com.udacity.qinfeng.sportifystreamer.toptracks;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.udacity.qinfeng.sportifystreamer.R;
 
-public class MainActivity extends ActionBarActivity {
+public class TopTracksActivity extends ActionBarActivity implements TopTracksFragment.OnFragmentInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+        setContentView(R.layout.activity_top_tracks);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_top_tracks, menu);
         return true;
     }
 
@@ -32,8 +34,17 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == android.R.id.home){
+            finish();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public String getArtistId() {
+        return getIntent().getStringExtra(TopTracksFragment.KEY_PARAM_ARTIST_ID);
     }
 }
