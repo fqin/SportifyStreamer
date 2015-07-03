@@ -1,14 +1,33 @@
 package com.udacity.qinfeng.sportifystreamer.toptracks;
 
 import android.app.Activity;
+import android.app.Service;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.udacity.qinfeng.sportifystreamer.R;
+import com.udacity.qinfeng.sportifystreamer.model.SSTrack;
+import com.udacity.qinfeng.sportifystreamer.util.CountryManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,7 +39,20 @@ public class TopTracksFragment extends Fragment {
 
     public static final String KEY_PARAM_ARTIST_ID = "artist_id";
 
+    public static final String SAVE_TOP_TRACKS_LIST_KEY = "topTracks";
+
+
+    private SpotifyService sportifyService = new SpotifyApi().getService();
+
     private OnFragmentInteractionListener mListener;
+    private ListView topTracksListView;
+    private TextView emptyMsg; //textView for empty message
+    private View searchingIcon;
+
+    private MyAdapter listAdapter;
+
+    private ArrayList<SSTrack> mTopTracks;
+    private String artistId;
 
     public TopTracksFragment() {
         // Required empty public constructor
@@ -32,13 +64,36 @@ public class TopTracksFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_top_tracks, container, false);
-        TextView textView = (TextView)view.findViewById(R.id.textView);
-        textView.setText("id artist:" + mListener.getArtistId());
+        topTracksListView = (ListView)view.findViewById(R.id.topTrackslistView);
+        searchingIcon = view.findViewById(R.id.loadingIcon);
+        emptyMsg = (TextView)view.findViewById(R.id.emptyMsg);
+        hideEmptyMsg();
+        hideSearching();
+        mTopTracks = new ArrayList<>();
+
+        listAdapter = new MyAdapter(getActivity(), R.layout.track_item);
+        topTracksListView.setAdapter(listAdapter);
+
+        artistId = mListener.getArtistId();
+
+        if(savedInstanceState!=null){
+            mTopTracks = savedInstanceState.getParcelableArrayList(SAVE_TOP_TRACKS_LIST_KEY);
+            setListWithNewValue();
+
+        }else{
+            new SearchTopTrackTask().execute();
+        }
+
+
 
         return view;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(SAVE_TOP_TRACKS_LIST_KEY, mTopTracks);
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -61,6 +116,119 @@ public class TopTracksFragment extends Fragment {
     public interface OnFragmentInteractionListener {
 
         String getArtistId();
+    }
+
+    private class MyAdapter extends ArrayAdapter<SSTrack> {
+        private int ressource;
+        private Picasso picasso;
+
+        public MyAdapter(Context context, int resource) {
+            super(context, resource);
+            this.ressource = resource;
+            this.picasso = Picasso.with(getContext());
+        }
+
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder viewHolder;
+            if(convertView == null){
+
+                //inflation
+                LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(Service.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(this.ressource, parent, false);
+
+                //initialize view holder
+                viewHolder = new ViewHolder();
+                viewHolder.imageView = (ImageView)convertView.findViewById(R.id.trackAlbumImageView);
+                viewHolder.trackName = (TextView)convertView.findViewById(R.id.trackNameTextView);
+                viewHolder.albumName = (TextView)convertView.findViewById(R.id.albumNameTextView);
+                convertView.setTag(viewHolder);
+            }else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            //update values
+            SSTrack track = getItem(position);
+            if(track.getImageUrl()!=null){
+                picasso.load(track.getImageUrl()).into(viewHolder.imageView);
+            }else{
+                viewHolder.imageView.setImageResource(R.drawable.spotifyicon);
+            }
+            viewHolder.trackName.setText(track.getName());
+            viewHolder.albumName.setText(track.getAlbumName());
+            return convertView;
+        }
+    }
+
+    private static class ViewHolder {
+        ImageView imageView;
+        TextView trackName;
+        TextView albumName;
+    }
+
+    private class SearchTopTrackTask extends AsyncTask<Void, Void, List<SSTrack>> {
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showSearching();
+        }
+
+        @Override
+        protected List<SSTrack> doInBackground(Void... params) {
+
+            Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put(CountryManager.COUNTRY_PARAM, CountryManager.getCountryCode(getActivity()));
+
+            Tracks results = sportifyService.getArtistTopTrack(artistId, paramMap);
+
+            List<Track> tracks = results.tracks;
+            List<SSTrack> ssTracks = new ArrayList<>();
+            for (Track track : tracks){
+                String imageUrl=null;
+
+                if(track.album != null && track.album.images!=null && track.album.images.size()>0){
+                    imageUrl = track.album.images.get(track.album.images.size()-1).url;
+                }
+                ssTracks.add(new SSTrack(track.name, track.album==null?"":track.album.name, imageUrl));
+            }
+
+            return ssTracks;
+        }
+
+        @Override
+        protected void onPostExecute(List<SSTrack> tracks) {
+            super.onPostExecute(tracks);
+            hideSearching();
+            mTopTracks.clear();
+            mTopTracks.addAll(tracks);
+            setListWithNewValue();
+        }
+    }
+
+    private void setListWithNewValue(){
+        listAdapter.clear();
+        for (SSTrack track:mTopTracks){
+            listAdapter.add(track);
+        }
+        if(mTopTracks.size()==0){
+            showEmptyMsg();
+        }
+    }
+
+    private void hideSearching(){
+        searchingIcon.setVisibility(View.GONE);
+    }
+    private void showSearching(){
+        searchingIcon.setVisibility(View.VISIBLE);
+    }
+    private void hideEmptyMsg(){
+        emptyMsg.setVisibility(View.GONE);
+    }
+    private void showEmptyMsg(){
+        emptyMsg.setVisibility(View.VISIBLE);
     }
 
 }

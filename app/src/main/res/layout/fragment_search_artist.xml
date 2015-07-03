@@ -13,6 +13,12 @@
     <include layout="@layout/searching"
         android:id="@+id/loadingIcon"
         />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/emptyMsg"
+        android:text="@string/no_artist_found"
+        android:visibility="gone"/>
 
     <ListView
         android:layout_width="match_parent"

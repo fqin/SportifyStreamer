@@ -8,18 +8,35 @@
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/artistImageIV"
+        android:id="@+id/trackAlbumImageView"
         android:layout_gravity="left|center_vertical"
         android:padding="5dp"
         android:layout_marginRight="10dp"
         android:src="@drawable/spotifyicon"
         />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_gravity="center_vertical">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:text="New Text"
-        android:id="@+id/artistNameTV"
+        android:id="@+id/trackNameTextView"
         android:layout_weight="1"
-        android:gravity="left|center_vertical"/>
+        android:gravity="left"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="New Text"
+        android:id="@+id/albumNameTextView"
+        android:layout_weight="1"
+        android:gravity="left"/>
+
+    </LinearLayout>
 </LinearLayout>

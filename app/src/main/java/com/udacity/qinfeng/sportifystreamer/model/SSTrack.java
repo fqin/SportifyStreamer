@@ -1,5 +1,6 @@
 package com.udacity.qinfeng.sportifystreamer.model;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -53,6 +54,27 @@ public class SSTrack implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_NAME, this.name);
+        bundle.putString(KEY_ALBUM_NAME, this.albumName);
+        bundle.putString(KEY_IMAGE_URL,this.imageUrl);
+        dest.writeBundle(bundle);
 
     }
+
+    public static final Parcelable.Creator<SSTrack> CREATOR = new Creator<SSTrack>() {
+        @Override
+        public SSTrack createFromParcel(Parcel parcel) {
+            Bundle bundle = parcel.readBundle();
+
+            return new SSTrack(bundle.getString(KEY_NAME),
+                    bundle.getString(KEY_ALBUM_NAME),
+                    bundle.getString(KEY_IMAGE_URL));
+        }
+
+        @Override
+        public SSTrack[] newArray(int i) {
+            return new SSTrack[i];
+        }
+    };
 }

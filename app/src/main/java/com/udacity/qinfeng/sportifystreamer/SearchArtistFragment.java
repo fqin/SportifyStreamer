@@ -46,6 +46,7 @@ public class SearchArtistFragment extends Fragment {
     private EditText editText;
     private ListView listView;
     private View searchingIcon;
+    private TextView emptyMsg;
     private MyAdapter listAdapter;
     private CountDownTimer countDownTimer;
     private ArrayList<SSArtist> mSSArtists = new ArrayList<>();
@@ -63,7 +64,12 @@ public class SearchArtistFragment extends Fragment {
     private void showSearching(){
         searchingIcon.setVisibility(View.VISIBLE);
     }
-
+    private void hideEmptyMsg(){
+        emptyMsg.setVisibility(View.GONE);
+    }
+    private void showEmptyMsg(){
+        emptyMsg.setVisibility(View.VISIBLE);
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -73,6 +79,7 @@ public class SearchArtistFragment extends Fragment {
         editText = (EditText) view.findViewById(R.id.searchArtistET);
         listView = (ListView) view.findViewById(R.id.artistListLV);
         searchingIcon = view.findViewById(R.id.loadingIcon);
+        emptyMsg = (TextView)view.findViewById(R.id.emptyMsg);
         hideSearching();
 
         listAdapter = new MyAdapter(getActivity(),R.layout.artist_item);
@@ -153,7 +160,7 @@ public class SearchArtistFragment extends Fragment {
         outState.putParcelableArrayList(SEARCH_RESULT_KEY, mSSArtists);
     }
 
-    class MyAdapter extends ArrayAdapter<SSArtist>{
+    private class MyAdapter extends ArrayAdapter<SSArtist>{
         private int ressource;
         private Picasso picasso;
 
@@ -207,6 +214,7 @@ public class SearchArtistFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             showSearching();
+            hideEmptyMsg();
         }
 
         @Override
@@ -243,7 +251,12 @@ public class SearchArtistFragment extends Fragment {
         for (SSArtist artist:mSSArtists){
             listAdapter.add(artist);
         }
+        if(mSSArtists.size()==0){
+            showEmptyMsg();
+        }
     }
+
+
 
 
 
