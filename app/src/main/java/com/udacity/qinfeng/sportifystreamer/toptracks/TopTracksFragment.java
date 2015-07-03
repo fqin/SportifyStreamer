@@ -39,6 +39,8 @@ public class TopTracksFragment extends Fragment {
 
     public static final String KEY_PARAM_ARTIST_ID = "artist_id";
 
+
+
     public static final String SAVE_TOP_TRACKS_LIST_KEY = "topTracks";
 
 

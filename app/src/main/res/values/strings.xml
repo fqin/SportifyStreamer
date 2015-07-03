@@ -6,6 +6,7 @@
     <string name="title_activity_top_tracks">Top 10 tracks</string>
     <string name="no_track_found_msg">No tracks found for this artist</string>
     <string name="no_artist_found">No artist found. Maybe the name you entered is not correct?</string>
+    <string name="enter_artist_name">Enter an artist name</string>
 
 
 </resources>

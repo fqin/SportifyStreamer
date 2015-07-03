@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="horizontal"
     android:minHeight="?android:attr/listPreferredItemHeight">
 
 
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="@dimen/list_image_width"
+        android:layout_height="@dimen/list_image_height"
         android:id="@+id/artistImageIV"
         android:layout_gravity="left|center_vertical"
-        android:padding="5dp"
-        android:layout_marginRight="10dp"
         android:src="@drawable/spotifyicon"
         />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/standard_margin"
         android:text="New Text"
         android:id="@+id/artistNameTV"
-        android:layout_weight="1"
         android:gravity="left|center_vertical"/>
 </LinearLayout>
