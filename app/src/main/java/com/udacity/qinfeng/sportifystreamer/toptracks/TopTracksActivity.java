@@ -1,11 +1,11 @@
 package com.udacity.qinfeng.sportifystreamer.toptracks;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import com.udacity.qinfeng.sportifystreamer.R;
 
-public class TopTracksActivity extends ActionBarActivity implements TopTracksFragment.OnFragmentInteractionListener{
+public class TopTracksActivity extends AppCompatActivity implements TopTracksFragment.OnFragmentInteractionListener{
 
     public static final String KEY_PARAM_ARTIST_NAME = "artist_name";
 
