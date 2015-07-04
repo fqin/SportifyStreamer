@@ -10,7 +10,7 @@
         android:layout_height="@dimen/list_image_height"
         android:id="@+id/trackAlbumImageView"
         android:layout_gravity="left|center_vertical"
-        android:src="@drawable/spotifyicon"
+        android:src="@drawable/ic_spotifyicon"
         />
     <LinearLayout
         android:layout_width="wrap_content"

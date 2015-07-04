@@ -11,7 +11,7 @@
         android:layout_height="@dimen/list_image_height"
         android:id="@+id/artistImageIV"
         android:layout_gravity="left|center_vertical"
-        android:src="@drawable/spotifyicon"
+        android:src="@drawable/ic_spotifyicon"
         />
 
     <TextView

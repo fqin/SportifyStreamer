@@ -52,12 +52,6 @@ public class SearchArtistFragment extends Fragment {
     private ArrayList<SSArtist> mSSArtists = new ArrayList<>();
     private String searchText;
 
-
-
-    public SearchArtistFragment() {
-        // Required empty public constructor
-    }
-
     private void hideSearching(){
         searchingIcon.setVisibility(View.GONE);
     }
@@ -195,7 +189,7 @@ public class SearchArtistFragment extends Fragment {
             if(artist.getImageUrl()!=null){
                 picasso.load(artist.getImageUrl()).into(viewHolder.imageView);
             }else{
-                viewHolder.imageView.setImageResource(R.drawable.spotifyicon);
+                viewHolder.imageView.setImageResource(R.drawable.ic_spotifyicon);
             }
             viewHolder.textView.setText(artist.getName());
             return convertView;

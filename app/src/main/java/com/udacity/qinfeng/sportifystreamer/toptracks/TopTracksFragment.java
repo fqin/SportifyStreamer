@@ -39,8 +39,6 @@ public class TopTracksFragment extends Fragment {
 
     public static final String KEY_PARAM_ARTIST_ID = "artist_id";
 
-
-
     public static final String SAVE_TOP_TRACKS_LIST_KEY = "topTracks";
 
 
@@ -55,11 +53,6 @@ public class TopTracksFragment extends Fragment {
 
     private ArrayList<SSTrack> mTopTracks;
     private String artistId;
-
-    public TopTracksFragment() {
-        // Required empty public constructor
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -155,7 +148,7 @@ public class TopTracksFragment extends Fragment {
             if(track.getImageUrl()!=null){
                 picasso.load(track.getImageUrl()).into(viewHolder.imageView);
             }else{
-                viewHolder.imageView.setImageResource(R.drawable.spotifyicon);
+                viewHolder.imageView.setImageResource(R.drawable.ic_spotifyicon);
             }
             viewHolder.trackName.setText(track.getName());
             viewHolder.albumName.setText(track.getAlbumName());
