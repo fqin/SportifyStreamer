@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -68,6 +69,12 @@ public class TopTracksFragment extends Fragment {
 
         listAdapter = new MyAdapter(getActivity(), R.layout.track_item);
         topTracksListView.setAdapter(listAdapter);
+        topTracksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mListener.onTrackSelected(listAdapter.getItem(position).getId(), mTopTracks);
+            }
+        });
 
         artistId = mListener.getArtistId();
 
@@ -111,6 +118,8 @@ public class TopTracksFragment extends Fragment {
     public interface OnFragmentInteractionListener {
 
         String getArtistId();
+
+        void onTrackSelected(String trackId, ArrayList<SSTrack> ssTracks);
     }
 
     private class MyAdapter extends ArrayAdapter<SSTrack> {
@@ -175,19 +184,16 @@ public class TopTracksFragment extends Fragment {
         protected List<SSTrack> doInBackground(Void... params) {
 
             Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put(CountryManager.COUNTRY_PARAM, CountryManager.getCountryCode(getActivity()));
+            paramMap.put(CountryManager.COUNTRY_PARAM,
+                    CountryManager.getCountryCode(getActivity()));
 
             Tracks results = sportifyService.getArtistTopTrack(artistId, paramMap);
 
             List<Track> tracks = results.tracks;
             List<SSTrack> ssTracks = new ArrayList<>();
             for (Track track : tracks){
-                String imageUrl=null;
 
-                if(track.album != null && track.album.images!=null && track.album.images.size()>0){
-                    imageUrl = track.album.images.get(track.album.images.size()-1).url;
-                }
-                ssTracks.add(new SSTrack(track.name, track.album==null?"":track.album.name, imageUrl));
+                ssTracks.add(getSSTrack(track));
             }
 
             return ssTracks;
@@ -201,6 +207,26 @@ public class TopTracksFragment extends Fragment {
             mTopTracks.addAll(tracks);
             setListWithNewValue();
         }
+    }
+
+    private SSTrack getSSTrack(Track track) {
+
+        String imageUrl=null;
+        String artworkUrl = null;
+        if(track.album != null && track.album.images!=null && track.album.images.size()>1){
+            imageUrl = track.album.images.get(track.album.images.size()-1).url;
+            artworkUrl = track.album.images.get(track.album.images.size()-2).url;
+        }
+        StringBuilder artistStrBuilder = new StringBuilder();
+        for(int i=0; i<track.artists.size(); i++){
+            artistStrBuilder.append(track.artists.get(i).name);
+            if(i<track.artists.size()-1){
+                artistStrBuilder.append(", ");
+            }
+        }
+
+        return new SSTrack(track.name, track.album==null?"":track.album.name, imageUrl,
+                track.id,artistStrBuilder.toString(), artworkUrl, track.duration_ms);
     }
 
     private void setListWithNewValue(){

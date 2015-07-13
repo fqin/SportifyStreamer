@@ -1,9 +1,9 @@
 package com.udacity.qinfeng.sportifystreamer;
 
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -22,8 +22,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.udacity.qinfeng.sportifystreamer.model.SSArtist;
-import com.udacity.qinfeng.sportifystreamer.toptracks.TopTracksActivity;
-import com.udacity.qinfeng.sportifystreamer.toptracks.TopTracksFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +49,10 @@ public class SearchArtistFragment extends Fragment {
     private CountDownTimer countDownTimer;
     private ArrayList<SSArtist> mSSArtists = new ArrayList<>();
     private String searchText;
+
+
+    private OnFragmentInteractionListener mListener;
+
 
     private void hideSearching(){
         searchingIcon.setVisibility(View.GONE);
@@ -81,10 +83,10 @@ public class SearchArtistFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), TopTracksActivity.class);
-                intent.putExtra(TopTracksFragment.KEY_PARAM_ARTIST_ID, ((SSArtist)parent.getAdapter().getItem(position)).getId());
-                intent.putExtra(TopTracksActivity.KEY_PARAM_ARTIST_NAME, ((SSArtist)parent.getAdapter().getItem(position)).getName());
-                startActivity(intent);
+
+                mListener.onArtistSelected(((SSArtist) parent.getAdapter().getItem(position)).getId(),
+                        ((SSArtist) parent.getAdapter().getItem(position)).getName());
+
             }
         });
 
@@ -251,8 +253,29 @@ public class SearchArtistFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onAttach(Activity activity) {
 
+        super.onAttach(activity);
+        try {
+            mListener = (SearchArtistFragment.OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
 
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+
+        void onArtistSelected(String artistId, String artistName);
+    }
 
 
 }

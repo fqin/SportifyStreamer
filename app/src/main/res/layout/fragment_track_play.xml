@@ -1,0 +1,73 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context="com.udacity.qinfeng.sportifystreamer.trackplay.TrackPlayFragment"
+    android:gravity="center_horizontal">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="artist name"
+        android:id="@+id/artistNameTextView"
+    />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="album name"
+        android:id="@+id/albumNameTextView"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/albumImageView" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="track name"
+        android:id="@+id/trackNameTextView"/>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/musicPreviousBtn"
+            android:src="@android:drawable/ic_media_previous"
+            android:tint="@android:color/background_dark" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/musicPlayBtn"
+            android:src="@android:drawable/ic_media_play"
+            android:tint="@android:color/background_dark"
+            />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/musicNextBtn"
+            android:tint="@android:color/background_dark"
+            android:src="@android:drawable/ic_media_next" />
+
+    </LinearLayout>
+</LinearLayout>
+</ScrollView>
