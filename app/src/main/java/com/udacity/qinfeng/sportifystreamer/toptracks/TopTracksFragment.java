@@ -226,7 +226,7 @@ public class TopTracksFragment extends Fragment {
         }
 
         return new SSTrack(track.name, track.album==null?"":track.album.name, imageUrl,
-                track.id,artistStrBuilder.toString(), artworkUrl, track.duration_ms);
+                track.id,artistStrBuilder.toString(), artworkUrl, track.duration_ms, track.preview_url);
     }
 
     private void setListWithNewValue(){

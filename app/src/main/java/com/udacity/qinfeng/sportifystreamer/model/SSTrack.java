@@ -16,6 +16,8 @@ public class SSTrack implements Parcelable {
     private static final String KEY_ARTIST_NAME="artist";
     private static final String KEY_ARTWORK_URL="artwork_url";
     private static final String KEY_DURATION_IN_MS="durationInMs";
+    private static final String KEY_PREVIEW_URL="previewUrl";
+
 
 
     private String name;
@@ -24,6 +26,7 @@ public class SSTrack implements Parcelable {
     private String id;
     private String artistName;
     private String artworkUrl;
+    private String previewUrl;
     private long durationInMs; //duration in milli-secondes
 
     public String getName() {
@@ -78,12 +81,20 @@ public class SSTrack implements Parcelable {
         return durationInMs;
     }
 
-    public void setDurationInMs(int durationInMs) {
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
+    }
+
+    public void setDurationInMs(long durationInMs) {
         this.durationInMs = durationInMs;
     }
 
     public SSTrack(String name, String albumName, String imageUrl, String id, String artistName,
-                   String artworkUrl, long durationInMs) {
+                   String artworkUrl, long durationInMs, String previewUrl) {
         this.name = name;
         this.albumName = albumName;
         this.imageUrl = imageUrl;
@@ -91,6 +102,7 @@ public class SSTrack implements Parcelable {
         this.artistName = artistName;
         this.artworkUrl = artworkUrl;
         this.durationInMs = durationInMs;
+        this.previewUrl = previewUrl;
     }
 
     @Override
@@ -108,6 +120,7 @@ public class SSTrack implements Parcelable {
         bundle.putString(KEY_ARTIST_NAME,this.artistName);
         bundle.putString(KEY_ARTWORK_URL,this.artworkUrl);
         bundle.putLong(KEY_DURATION_IN_MS, this.durationInMs);
+        bundle.putString(KEY_PREVIEW_URL, this.previewUrl);
         dest.writeBundle(bundle);
 
     }
@@ -123,7 +136,8 @@ public class SSTrack implements Parcelable {
                     bundle.getString(KEY_ID),
                     bundle.getString(KEY_ARTIST_NAME),
                     bundle.getString(KEY_ARTWORK_URL),
-                    bundle.getInt(KEY_DURATION_IN_MS));
+                    bundle.getLong(KEY_DURATION_IN_MS),
+                    bundle.getString(KEY_PREVIEW_URL));
         }
 
         @Override
