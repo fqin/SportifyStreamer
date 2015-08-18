@@ -2,7 +2,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="@dimen/standard_margin"
+>
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -25,44 +27,58 @@
         android:id="@+id/albumNameTextView"/>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/albumImageView" />
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="track name"
-        android:id="@+id/trackNameTextView"/>
-
-    <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/musicControlBar"
-        android:progress="1"/>
+        android:id="@+id/albumImageView"
+        android:src="@drawable/prince"
+        android:scaleType="fitStart"
+        android:adjustViewBounds="true"
+        android:layout_margin="16dp"
+        />
 
-    <RelativeLayout
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="track name"
+            android:id="@+id/trackNameTextView"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/musicControlBar"
+                android:progress="1"/>
+            <include layout="@layout/searching"
+                android:id="@+id/loadingIcon"
+                />
+        </FrameLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="right">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0:00"
-            android:layout_marginLeft="16dp"
-            android:id="@+id/musicCurrentTime"/>
-
+            android:id="@+id/musicCurrentTime"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="/"
+            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0:00"
             android:id="@+id/musicEndTime"
-            android:layout_alignParentRight="true"
             android:layout_marginRight="16dp"/>
-
-
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -75,14 +91,15 @@
             android:id="@+id/musicPreviousBtn"
             android:src="@android:drawable/ic_media_previous"
             android:tint="@android:color/background_dark" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/musicPlayBtn"
+                android:src="@android:drawable/ic_media_play"
+                android:tint="@android:color/background_dark"
+                />
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/musicPlayBtn"
-            android:src="@android:drawable/ic_media_play"
-            android:tint="@android:color/background_dark"
-            />
+
 
         <ImageButton
             android:layout_width="wrap_content"

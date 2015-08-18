@@ -1,6 +1,7 @@
 package com.udacity.qinfeng.sportifystreamer.trackplay;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
@@ -18,6 +19,15 @@ public class TrackPlayActivity extends AppCompatActivity implements TrackPlayFra
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track_play);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (savedInstanceState == null) {
+
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .add(R.id.playTrackFragment, new TrackPlayFragment())
+                        .commit();
+            }
+
     }
 
     @Override
@@ -27,7 +37,7 @@ public class TrackPlayActivity extends AppCompatActivity implements TrackPlayFra
 
     @Override
     public ArrayList<SSTrack> getTrackList() {
-        return getIntent().getParcelableArrayListExtra(TrackPlayFragment.PARAM_TRACK_LIST);
+        return getIntent().getParcelableArrayListExtra(TrackPlayFragment.TRACK_LIST);
     }
 
     @Override

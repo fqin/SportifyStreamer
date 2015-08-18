@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sportify Streamer</string>
+    <string name="app_name">Spotify Streamer</string>
 
     <string name="action_settings">Settings</string>
 
@@ -7,9 +7,14 @@
     <string name="no_track_found_msg">No tracks found for this artist</string>
     <string name="no_artist_found">No artist found. Maybe the name you entered is not correct?</string>
     <string name="enter_artist_name">Enter an artist name</string>
+    <string name="read_track_error">Read track error</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="already_begin_of_play_list">This is the begin of play list</string>
+    <string name="already_end_of_play_list">This is the end of play list</string>
+
 
 
 </resources>

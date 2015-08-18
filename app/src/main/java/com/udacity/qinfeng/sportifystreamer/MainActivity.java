@@ -8,15 +8,23 @@ import android.view.View;
 import com.udacity.qinfeng.sportifystreamer.model.SSTrack;
 import com.udacity.qinfeng.sportifystreamer.toptracks.TopTracksActivity;
 import com.udacity.qinfeng.sportifystreamer.toptracks.TopTracksFragment;
+import com.udacity.qinfeng.sportifystreamer.trackplay.TrackPlayActivity;
+import com.udacity.qinfeng.sportifystreamer.trackplay.TrackPlayFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements SearchArtistFragment.OnFragmentInteractionListener, TopTracksFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements
+        SearchArtistFragment.OnFragmentInteractionListener,
+        TopTracksFragment.OnFragmentInteractionListener,
+        TrackPlayFragment.OnFragmentInteractionListener{
 
 
     private View topTracksContainer;
     private String artistId;
+    private String selectedTrackId;
+    private ArrayList<SSTrack> trackList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +61,21 @@ public class MainActivity extends AppCompatActivity implements SearchArtistFragm
 
     @Override
     public void onTrackSelected(String trackId, ArrayList<SSTrack> ssTracks) {
+        TrackPlayFragment trackPlayFragment = new TrackPlayFragment();
 
+        selectedTrackId = trackId;
+        trackList=ssTracks;
+        trackPlayFragment.show(getSupportFragmentManager(), "dialog");
+
+    }
+
+    @Override
+    public String getSelectedTrackId() {
+        return selectedTrackId;
+    }
+
+    @Override
+    public ArrayList<SSTrack> getTrackList() {
+        return trackList;
     }
 }

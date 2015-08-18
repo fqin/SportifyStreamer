@@ -61,7 +61,7 @@ public class TopTracksActivity extends AppCompatActivity implements TopTracksFra
 
         Intent intent = new Intent(this, TrackPlayActivity.class);
         intent.putExtra(TrackPlayFragment.PARAM_SELECTED_TRACK_ID, trackId);
-        intent.putExtra(TrackPlayFragment.PARAM_TRACK_LIST, ssTracks);
+        intent.putExtra(TrackPlayFragment.TRACK_LIST, ssTracks);
         startActivity(intent);
 
     }
