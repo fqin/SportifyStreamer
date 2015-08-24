@@ -2,6 +2,11 @@ package com.udacity.qinfeng.sportifystreamer.trackplay;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -42,6 +47,7 @@ public class TrackPlayFragment extends DialogFragment {
     private ArrayList<SSTrack> trackList;
 
     public static final String SELECTED_TRACK_ID="selectedTrackId";
+    public static final String SEEKBAR_POS = "seekbarPos";
 
     private TextView artistNameTextView;
     private TextView albumNameTextView;
@@ -55,27 +61,119 @@ public class TrackPlayFragment extends DialogFragment {
     private ImageButton previousTrackBtn;
     private ImageButton playBtn;
     private ImageButton nextTrackBtn;
-    private View searchingIcon;
     private boolean playModeDialog=false;
 
-    private boolean playPrepared=false;
+    private boolean musicSuspended = false;
+    private boolean musicPlaying = false;
+    private static final String MUSIC_PLAYING="musicPlaying";
+    private static final String MUSIC_SUSPENDED="musicSuspended";
 
     private Picasso picasso;
-    private MediaPlayer mediaPlayer;
+
+    //buffering variables
+    private boolean mBufferingBroadcastReceiverRegistered;
+    private ProgressDialog pdBuff;
+
+    //seekbar variables
+    private boolean mSeekBroadcastReceiverRegistered;
+    private int mMusicPosition;
+    private static final String MUSIC_POSITION="musicPosition";
+    private int mMusicMax;
+    private static final String MUSIC_MAX="musicMax";
+
+
+    public static final String SEEKBAR_POS_BROADCAST="seekbar_pos_broadcast";
+    public static final String MUSIC_PLAY_BROADCAST="music_play_broadcast";
+    public static final String MUSIC_PLAY_ACTION="musicPlayAction";
+
+
+
+    private Intent musicServiceIntent;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         picasso = Picasso.with(getActivity());
         playModeDialog=getResources().getBoolean(R.bool.playModeDialog);
+        muiscResumeIntent.putExtra(MUSIC_PLAY_ACTION,MusicPlayAction.Resume.toString());
+        musicPauseIntent.putExtra(MUSIC_PLAY_ACTION,MusicPlayAction.Pause.toString());
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(SELECTED_TRACK_ID,selectedTrackId);
-        outState.putParcelableArrayList(TRACK_LIST,trackList);
+        outState.putString(SELECTED_TRACK_ID, selectedTrackId);
+        outState.putParcelableArrayList(TRACK_LIST, trackList);
+        outState.putBoolean(MUSIC_PLAYING, musicPlaying);
+        outState.putBoolean(MUSIC_SUSPENDED,musicSuspended);
+
+        outState.putInt(MUSIC_MAX, mMusicMax);
+        outState.putInt(MUSIC_POSITION,mMusicPosition);
     }
+
+    private void handlePd(Intent intent){
+
+        String bufferState = intent.getStringExtra(MusicPlayService.BUFFERING);
+        if(BufferingState.ON_GOING.toString().equals(bufferState)){
+            pdBuff = ProgressDialog.show(getActivity(),null,null,true);
+        }else if(BufferingState.DONE.toString().equals(bufferState)){
+            if(pdBuff!=null){
+                pdBuff.dismiss();
+            }
+        }
+    }
+
+    private BroadcastReceiver bufferBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handlePd(intent);
+        }
+    };
+
+    private BroadcastReceiver seekBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            handleMusicProgress(intent);
+        }
+    };
+
+    private void handleMusicProgress(Intent intent) {
+        boolean musicEnded = intent.getBooleanExtra(MusicPlayService.SOND_ENDED,false);
+
+        if(musicEnded){
+            musicCurrentTime.setText(musicEndTime.getText());
+            musicControlBar.setProgress(mMusicMax);
+            playBtn.setImageResource(android.R.drawable.ic_media_play);
+            musicPlaying=false;
+        }else{
+            mMusicMax = intent.getIntExtra(MusicPlayService.MEDIA_MAX,0);
+            mMusicPosition = intent.getIntExtra(MusicPlayService.MEDIA_POSITION,0);
+
+            drawMusicPositionAndTime();
+        }
+    }
+
+    private void drawMusicPositionAndTime(){
+        musicControlBar.setMax(mMusicMax);
+        musicControlBar.setProgress(mMusicPosition);
+        musicEndTime.setText(convertSecondToMMSSString(mMusicMax));
+        musicCurrentTime.setText(convertSecondToMMSSString(mMusicPosition));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(mBufferingBroadcastReceiverRegistered){
+            getActivity().unregisterReceiver(bufferBroadcastReceiver);
+            mBufferingBroadcastReceiverRegistered=false;
+        }
+        if(mSeekBroadcastReceiverRegistered){
+            getActivity().unregisterReceiver(seekBroadcastReceiver);
+            mSeekBroadcastReceiverRegistered=false;
+        }
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -87,6 +185,10 @@ public class TrackPlayFragment extends DialogFragment {
         if(savedInstanceState!=null){
             selectedTrackId = savedInstanceState.getString(SELECTED_TRACK_ID);
             trackList = savedInstanceState.getParcelableArrayList(TRACK_LIST);
+            musicPlaying = savedInstanceState.getBoolean(MUSIC_PLAYING);
+            musicSuspended = savedInstanceState.getBoolean(MUSIC_SUSPENDED);
+            mMusicPosition = savedInstanceState.getInt(MUSIC_POSITION);
+            mMusicMax = savedInstanceState.getInt(MUSIC_MAX);
         }else{
             selectedTrackId = mListener.getSelectedTrackId();
             trackList = mListener.getTrackList();
@@ -100,6 +202,10 @@ public class TrackPlayFragment extends DialogFragment {
         setMusicControlBarOnChangeListener();
 
         setPlayButtonOnclickListener(ssTrack);
+
+        drawPlayBtn();
+
+        drawMusicPositionAndTime();
 
         previousTrackBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,10 +236,7 @@ public class TrackPlayFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // The only reason you might override this method when using onCreateView() is
-        // to modify any dialog characteristics. For example, the dialog includes a
-        // title by default, but your custom layout might not need it. So here you can
-        // remove the dialog title, but you must call the superclass to get the Dialog.
+
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -142,7 +245,22 @@ public class TrackPlayFragment extends DialogFragment {
 
     @Override
     public void onResume() {
+
+
+        if(!mBufferingBroadcastReceiverRegistered){
+            getActivity().registerReceiver(bufferBroadcastReceiver,
+                    new IntentFilter(MusicPlayService.BROADCAST_BUFFER));
+            mBufferingBroadcastReceiverRegistered=true;
+        }
+
+        if(!mSeekBroadcastReceiverRegistered){
+            getActivity().registerReceiver(seekBroadcastReceiver,
+                    new IntentFilter(MusicPlayService.BROADCAST_SEEKBAR));
+            mSeekBroadcastReceiverRegistered=true;
+        }
+
         super.onResume();
+
         if(playModeDialog){
             Window window = getDialog().getWindow();
             int dialogWidth = getResources().getDimensionPixelSize(R.dimen.dialogWidth);
@@ -151,13 +269,14 @@ public class TrackPlayFragment extends DialogFragment {
             window.setGravity(Gravity.CENTER);
         }
 
+
     }
 
     private void playTrack(final SSTrack ssTrack){
-        mediaPlayer.reset();
         setTrackInfoOnScreen(ssTrack);
         selectedTrackId = ssTrack.getId();
-        prepareAsync(ssTrack);
+        playAudio(ssTrack);
+        drawPlayBtn();
     }
 
     private void setTrackInfoOnScreen(SSTrack ssTrack) {
@@ -171,11 +290,11 @@ public class TrackPlayFragment extends DialogFragment {
         musicControlBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && playPrepared) {
-                    musicCurrentTime.setText(convertSecondToMMSSString(progress));
-                    mediaPlayer.seekTo(progress);
+                if (fromUser) {
+                    Intent seekbarIntent = new Intent(SEEKBAR_POS_BROADCAST);
+                    seekbarIntent.putExtra(SEEKBAR_POS, progress);
+                    getActivity().sendBroadcast(seekbarIntent);
                 }
-
             }
 
             @Override
@@ -188,102 +307,46 @@ public class TrackPlayFragment extends DialogFragment {
         });
     }
 
+
     private void setPlayButtonOnclickListener(final SSTrack ssTrack) {
         playBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (mediaPlayer == null) { //initialisation
-                    initMediaPlayer();
-                }
-
-                if (!mediaPlayer.isPlaying()) {
-                    if (!playPrepared) {
-                        prepareAsync(ssTrack);
-                    } else {
-                        mediaPlayer.start();
-                        changePlayBtnStatus();
-                    }
+                if (!musicPlaying) {
+                    playAudio(ssTrack);
                 } else {
-                    mediaPlayer.pause();
-                    changePlayBtnStatus();
+                    pauseAudio();
                 }
+                drawPlayBtn();
             }
         });
-
-        playBtn.performClick();
-        playBtn.setClickable(false);
     }
 
-    private void prepareAsync(SSTrack ssTrack) {
-        try {
-            mediaPlayer.setDataSource(ssTrack.getPreviewUrl());
-        } catch (IOException e) {
-            Toast.makeText(getActivity(), getString(R.string.read_track_error), Toast.LENGTH_SHORT).show();
+    private void drawPlayBtn(){
+        playBtn.setImageResource(musicPlaying?android.R.drawable.ic_media_pause:android.R.drawable.ic_media_play);
+    }
+
+    private Intent musicPauseIntent = new Intent(MUSIC_PLAY_BROADCAST);
+    private Intent muiscResumeIntent = new Intent(MUSIC_PLAY_BROADCAST);
+    private void playAudio(SSTrack ssTrack){
+        if(musicSuspended){
+            getActivity().sendBroadcast(muiscResumeIntent);
+            musicSuspended=false;
+
+        }else{
+            musicServiceIntent = new Intent(getActivity(),MusicPlayService.class);
+            musicServiceIntent.putExtra(MusicPlayService.AUDIO_URL, ssTrack.getPreviewUrl());
+            getActivity().startService(musicServiceIntent);
         }
-        showSearching();
-        mediaPlayer.prepareAsync();
+        musicPlaying = true;
+
     }
 
-    private void initMediaPlayer() {
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                playPrepared = true;
-                hideSearching();
-                playBtn.setClickable(true);
-                mediaPlayer.start();
-                int duration = mediaPlayer.getDuration();
-                musicControlBar.setProgress(0);
-                musicControlBar.setMax(duration);
+    private void pauseAudio(){
 
-                musicEndTime.setText(convertSecondToMMSSString(duration));
-                changePlayBtnStatus();
-                //from http://stackoverflow.com/questions/11687011/run-loop-every-second-java
-                (new Thread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        while (!Thread.interrupted())
-                            try {
-                                if(getActivity()!=null){
-                                    getActivity().runOnUiThread(new Runnable() // start actions in UI thread
-                                    {
-                                        @Override
-                                        public void run() {
-                                            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-                                                int currentPositionInMs = mediaPlayer.getCurrentPosition();
-                                                musicControlBar.setProgress(currentPositionInMs);
-                                                musicCurrentTime.setText(convertSecondToMMSSString(currentPositionInMs));
-                                            }
-                                        }
-
-                                    });
-                                    Thread.sleep(100);
-                                }
-                            } catch (InterruptedException e) {
-                                // ooops
-                            }
-                        Log.i("spotifyStreamer", "music played");
-                    }
-                })).start();
-
-            }
-        });
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                playPrepared = false;
-                musicCurrentTime.setText(convertSecondToMMSSString(mediaPlayer.getDuration()));//be sure of finished
-                changePlayBtnStatus();
-                //play next song if we have
-                if(nextTrackId!=null){
-                    nextTrackBtn.performClick();
-                }
-            }
-        });
+        getActivity().sendBroadcast(musicPauseIntent);
+        musicPlaying = false;
+        musicSuspended = true;
     }
 
 
@@ -300,7 +363,6 @@ public class TrackPlayFragment extends DialogFragment {
         previousTrackBtn = (ImageButton)view.findViewById(R.id.musicPreviousBtn);
         playBtn = (ImageButton)view.findViewById(R.id.musicPlayBtn);
         nextTrackBtn = (ImageButton)view.findViewById(R.id.musicNextBtn);
-        searchingIcon = view.findViewById(R.id.loadingIcon);
     }
 
 
@@ -334,10 +396,6 @@ public class TrackPlayFragment extends DialogFragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
-        if(mediaPlayer!=null){
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
     }
 
     public interface OnFragmentInteractionListener {
@@ -356,17 +414,6 @@ public class TrackPlayFragment extends DialogFragment {
 
         return time;
 
-    }
-
-    private void changePlayBtnStatus(){
-       playBtn.setImageResource(mediaPlayer.isPlaying()?android.R.drawable.ic_media_pause:android.R.drawable.ic_media_play);
-    }
-
-    private void hideSearching(){
-        searchingIcon.setVisibility(View.GONE);
-    }
-    private void showSearching(){
-        searchingIcon.setVisibility(View.VISIBLE);
     }
 
 }

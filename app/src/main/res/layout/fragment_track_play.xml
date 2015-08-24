@@ -52,9 +52,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/musicControlBar"
                 android:progress="1"/>
-            <include layout="@layout/searching"
-                android:id="@+id/loadingIcon"
-                />
+
         </FrameLayout>
 
     <LinearLayout
